@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Document, Issue, Deal
 from app.services.analyzer import analyze_document
+from app.services.risk_score import compute_risk_score
 
 router = APIRouter(prefix="/api/deals/{deal_id}/analysis", tags=["analysis"])
 
@@ -45,10 +46,7 @@ def analyze_document_endpoint(deal_id: str, doc_id: str, db: Session = Depends(g
     deal = db.query(Deal).filter(Deal.id == deal_id).first()
     if deal:
         deal.issue_count = db.query(Issue).filter(Issue.deal_id == deal_id).count()
-        all_docs = db.query(Document).filter(Document.deal_id == deal_id).all()
-        scores = [d.red_flags for d in all_docs if d.red_flags]
-        total_flags = sum(len(f) for f in scores if f)
-        deal.risk_score = min(100, total_flags * 10) if total_flags else 0
+        deal.risk_score = compute_risk_score(db, deal_id)
 
     doc.status = "analyzed"
     db.commit()
@@ -92,9 +90,7 @@ def analyze_all_documents(deal_id: str, db: Session = Depends(get_db)):
             results.append({"doc_id": doc.id, "status": "error", "error": str(e)})
 
     deal.issue_count = db.query(Issue).filter(Issue.deal_id == deal_id).count()
-    all_docs = db.query(Document).filter(Document.deal_id == deal_id).all()
-    total_flags = sum(len(d.red_flags or []) for d in all_docs)
-    deal.risk_score = min(100, total_flags * 10) if total_flags else 0
+    deal.risk_score = compute_risk_score(db, deal_id)
     db.commit()
 
     return {"total_analyzed": len(results), "results": results, "total_issues": deal.issue_count, "risk_score": deal.risk_score}

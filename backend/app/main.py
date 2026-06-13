@@ -5,13 +5,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.database import init_db, SessionLocal, set_current_org, set_default_org
-from app.routers import deals, documents, issues, analysis, qa, reports, users, clients, activity
+from app.routers import deals, documents, issues, analysis, qa, reports, users, clients, activity, auth
 from app.web.routes import router as web_router
 from app.middleware.auth import APIKeyMiddleware
 from app.middleware.audit import AuditMiddleware
 from app.middleware.error_handler import ErrorHandlerMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.seed import get_or_create_default_org
+from app.services.email_service import configure_smtp
 
 logging.basicConfig(
     level=getattr(logging, settings.log_level.upper(), logging.INFO),
@@ -47,6 +48,7 @@ app.include_router(reports.router)
 app.include_router(users.router)
 app.include_router(clients.router)
 app.include_router(activity.router)
+app.include_router(auth.router)
 app.include_router(web_router)
 
 static_dir = Path(__file__).parent / "static"
@@ -81,6 +83,11 @@ def on_startup():
 
     if settings.encrypt_documents and not settings.encryption_key:
         logger.warning("ENCRYPT_DOCUMENTS=true but ENCRYPTION_KEY is not set")
+
+    if settings.smtp_host:
+        configure_smtp(settings.smtp_host, settings.smtp_port, settings.smtp_user,
+                       settings.smtp_pass, settings.smtp_from or settings.firm_email, settings.smtp_tls)
+        logger.info("SMTP configured for %s", settings.smtp_host)
 
     logger.info(
         "%s started — auth=%s encryption=%s dpdp=%s model=%s",

@@ -3,24 +3,32 @@ from openai import OpenAI
 from app.config import settings
 from app.services.chunking import chunk_text
 
-QA_PROMPT = """You are an M&A due diligence Q&A assistant. Answer the question based SOLELY on the provided document excerpts.
+QA_PROMPT = """You are an M&A due diligence Q&A assistant specializing in Indian M&A transactions. You MUST answer based SOLELY on the provided document excerpts — do NOT use your training data.
 
-If the answer cannot be found, say "I couldn't find information about this in the provided documents."
+CONSTRAINTS (strict — read carefully):
+1. If the answer cannot be found in the excerpts below, say "I couldn't find information about this in the provided documents."
+2. Every claim MUST be supported by a citation from the excerpts below.
+3. If you cite a document, include the exact relevant excerpt and the filename.
+4. Never make up legal citations or regulatory references — only use what's in the documents.
+
+Indian M&A Context (use only for framing, NOT for generating facts not in the documents):
+- Companies Act 2013, SEBI SAST/LODR, FEMA/RBI, Income Tax Act 1961, CGST 2017, DPDP Act 2023
 
 Documents:
 {documents}
 
 Question: {question}
 
-Return a JSON object:
+Return valid JSON only (no markdown):
 {{
-  "answer": "your detailed answer",
+  "answer": "your detailed answer with citations inline",
   "citations": [
-    {{"filename": "doc1.pdf", "excerpt": "relevant text", "relevance": "why relevant"}}
+    {{"filename": "doc1.pdf", "excerpt": "exact text from the document", "relevance": "how this supports the answer"}}
   ]
 }}
 
-Only return valid JSON. No markdown fences."""
+If you cannot find the answer in the documents, return:
+{{"answer": "I couldn't find information about this in the provided documents.", "citations": []}}"""
 
 
 def answer_question(question: str, documents_text: list[dict], client=None) -> dict:

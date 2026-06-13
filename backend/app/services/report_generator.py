@@ -8,7 +8,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 from app.config import settings
 
-REPORT_PROMPT = """You are an M&A due diligence report writer specializing in INDIAN M&A transactions. Generate a comprehensive due diligence report based on the analysis below.
+REPORT_PROMPT = """You are an M&A due diligence report writer specializing in INDIAN M&A transactions. Generate a comprehensive due diligence report for {brand_name} ({firm_name}) based on the analysis below.
 
 Deal: {deal_name}
 Target: {target_company} (Indian company)
@@ -98,6 +98,8 @@ def generate_report_content(deal_name, target_company, acquirer,
             messages=[
                 {"role": "system", "content": "You are an M&A due diligence report writer specialized in Indian M&A transactions."},
                 {"role": "user", "content": REPORT_PROMPT.format(
+                    brand_name=settings.brand_name,
+                    firm_name=settings.firm_name,
                     deal_name=deal_name,
                     target_company=target_company,
                     acquirer=acquirer,
@@ -120,8 +122,20 @@ def generate_docx_report(report_text: str, output_path: str, deal_name: str) -> 
     font.name = "Calibri"
     font.size = Pt(11)
 
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p.add_run(settings.brand_name)
+    run.font.size = Pt(8)
+    run.font.color.rgb = RGBColor(100, 100, 100)
+
     title = doc.add_heading(f"Due Diligence Report: {deal_name}", level=0)
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    subtitle = doc.add_paragraph()
+    subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = subtitle.add_run(f"Prepared by: {settings.firm_name}")
+    run.font.size = Pt(9)
+    run.font.color.rgb = RGBColor(120, 120, 120)
 
     doc.add_paragraph(f"Generated: {datetime.now(timezone.utc).strftime('%d %B %Y')}")
     doc.add_paragraph("")

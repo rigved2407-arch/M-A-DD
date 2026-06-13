@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.workstream-badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+.ws-legal { @apply bg-purple-100 text-purple-800; }
+.ws-financial { @apply bg-green-100 text-green-800; }
+.ws-commercial { @apply bg-blue-100 text-blue-800; }
+.ws-tax { @apply bg-amber-100 text-amber-800; }
+.ws-hr { @apply bg-pink-100 text-pink-800; }
+.ws-it { @apply bg-cyan-100 text-cyan-800; }
+.ws-environmental { @apply bg-emerald-100 text-emerald-800; }
+.ws-insurance { @apply bg-orange-100 text-orange-800; }
+.ws-regulatory { @apply bg-red-100 text-red-800; }
+.ws-other { @apply bg-slate-100 text-slate-800; }

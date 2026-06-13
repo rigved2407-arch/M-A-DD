@@ -38,6 +38,14 @@ class Settings(BaseSettings):
     firm_email: str = "contact@yourfirm.com"
     support_email: str = "support@yourfirm.com"
 
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_pass: str = ""
+    smtp_from: str = ""
+    smtp_tls: bool = True
+    notification_email: str = ""
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

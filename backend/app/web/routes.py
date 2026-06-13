@@ -14,6 +14,8 @@ from app.services.qa_service import answer_question
 from app.services.report_generator import generate_report_content, generate_docx_report
 from app.services.dpdp_compliance import record_consent, get_consent_history, withdraw_consent, create_data_subject_request, get_dpdp_summary
 from app.services.compliance_checklist import get_compliance_checklist, get_compliance_summary
+from app.services.risk_score import compute_risk_score
+from app.services.email_service import send_analysis_complete, send_report_ready
 
 templates = Jinja2Templates(directory=Path(__file__).parent.parent / "templates")
 router = APIRouter(tags=["web"])
@@ -162,9 +164,7 @@ def analyze_doc_web(request: Request, deal_id: str, doc_id: str, db: Session = D
     deal = db.query(Deal).filter(Deal.id == deal_id).first()
     if deal:
         deal.issue_count = db.query(Issue).filter(Issue.deal_id == deal_id).count()
-        all_docs = db.query(Document).filter(Document.deal_id == deal_id).all()
-        total_flags = sum(len(d.red_flags or []) for d in all_docs)
-        deal.risk_score = min(100, total_flags * 10) if total_flags else 0
+        deal.risk_score = compute_risk_score(db, deal_id)
 
     doc.status = "analyzed"
     db.commit()
@@ -193,10 +193,15 @@ def analyze_all_web(request: Request, deal_id: str, db: Session = Depends(get_db
     deal = db.query(Deal).filter(Deal.id == deal_id).first()
     if deal:
         deal.issue_count = db.query(Issue).filter(Issue.deal_id == deal_id).count()
-        all_docs = db.query(Document).filter(Document.deal_id == deal_id).all()
-        total_flags = sum(len(d.red_flags or []) for d in all_docs)
-        deal.risk_score = min(100, total_flags * 10) if total_flags else 0
+        deal.risk_score = compute_risk_score(db, deal_id)
     db.commit()
+
+    if settings.notification_email and deal:
+        try:
+            send_analysis_complete(deal.deal_name, len(docs), deal.issue_count or 0, settings.notification_email)
+        except Exception:
+            pass
+
     return RedirectResponse(url=f"/deals/{deal_id}", status_code=303)
 
 
@@ -337,5 +342,11 @@ def generate_report_web(request: Request, deal_id: str, db: Session = Depends(ge
                       status="completed", summary=report_content[:500])
     db.add(report)
     db.commit()
+
+    if settings.notification_email and deal:
+        try:
+            send_report_ready(deal.deal_name, deal_id, settings.notification_email)
+        except Exception:
+            pass
 
     return RedirectResponse(url=f"/deals/{deal_id}", status_code=303)
