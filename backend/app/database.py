@@ -1,0 +1,111 @@
+import threading
+from sqlalchemy import create_engine, Column, String, ForeignKey, event
+from sqlalchemy.orm import sessionmaker, DeclarativeBase, declared_attr, Session
+
+from app.config import settings
+
+_db_url = settings.database_url
+if _db_url.startswith("postgresql://") and not _db_url.startswith("postgresql+psycopg://"):
+    _db_url = _db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+
+engine = create_engine(
+    _db_url,
+    connect_args={"check_same_thread": False} if "sqlite" in _db_url else {},
+    pool_size=5 if "postgresql" in _db_url else 5,
+    max_overflow=10 if "postgresql" in _db_url else 10,
+    pool_pre_ping=True if "postgresql" in _db_url else False,
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+# ── Tenant isolation ──────────────────────────────────────────────
+
+_current_org_tls = threading.local()
+_default_org_id: str | None = None
+
+
+def get_current_org() -> str | None:
+    return getattr(_current_org_tls, "org_id", None)
+
+
+def set_current_org(org_id: str | None) -> None:
+    _current_org_tls.org_id = org_id
+
+
+def set_default_org(org_id: str) -> None:
+    global _default_org_id
+    _default_org_id = org_id
+
+
+def get_default_org() -> str | None:
+    return _default_org_id
+
+
+class TenantMixin:
+    """Inherit from this mixin on any model scoped to an organization."""
+
+    @declared_attr
+    def organization_id(cls):
+        return Column(String, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+
+
+_tenant_filter_enabled = True
+
+
+def disable_tenant_filter():
+    global _tenant_filter_enabled
+    _tenant_filter_enabled = False
+
+
+def enable_tenant_filter():
+    global _tenant_filter_enabled
+    _tenant_filter_enabled = True
+
+
+@event.listens_for(Session, "do_orm_execute")
+def _tenant_filter(execute_state):
+    if not _tenant_filter_enabled:
+        return
+    org_id = get_current_org()
+    if org_id is None:
+        return
+    if not execute_state.is_select:
+        return
+    try:
+        for col_desc in execute_state.statement.column_descriptions:
+            entity = col_desc.get("entity")
+            if entity is not None and hasattr(entity, "organization_id"):
+                execute_state.statement = execute_state.statement.where(entity.organization_id == org_id)
+                return
+    except Exception:
+        pass
+
+
+@event.listens_for(Session, "before_flush")
+def _tenant_flush(session, flush_context, instances):
+    org_id = get_current_org() or get_default_org()
+    if org_id is None:
+        return
+    for instance in list(session.new) + list(session.dirty):
+        if hasattr(instance, "organization_id") and instance.organization_id is None:
+            instance.organization_id = org_id
+
+
+# ── Session / init ───────────────────────────────────────────────
+
+
+def init_db():
+    import app.models
+    Base.metadata.create_all(bind=engine)
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

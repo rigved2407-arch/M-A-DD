@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-xl mx-auto">
+  <a href="/" class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-6 transition-colors group">
+    <svg class="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    Back to Deals
+  </a>
+
+  <h1 class="text-2xl font-bold text-slate-900 mb-6">New Deal Room</h1>
+
+  <form action="/web/deals/create" method="post" class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-5">
+    <div>
+      <label class="block text-sm font-semibold text-slate-700 mb-1.5">Deal Name <span class="text-red-500">*</span></label>
+      <input type="text" name="deal_name" required
+             class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-shadow"
+             placeholder="e.g. Acme Corp Acquisition">
+    </div>
+    <div>
+      <label class="block text-sm font-semibold text-slate-700 mb-1.5">Target Company <span class="text-red-500">*</span></label>
+      <input type="text" name="target_company" required
+             class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-shadow"
+             placeholder="e.g. Acme Corp Pvt Ltd">
+    </div>
+    <div>
+      <label class="block text-sm font-semibold text-slate-700 mb-1.5">Acquirer <span class="text-slate-400 font-normal text-xs">(optional)</span></label>
+      <input type="text" name="acquirer"
+             class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-shadow"
+             placeholder="e.g. MegaCorp Inc">
+    </div>
+    <div>
+      <label class="block text-sm font-semibold text-slate-700 mb-1.5">Client <span class="text-slate-400 font-normal text-xs">(optional)</span></label>
+      <select name="client_id" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500">
+        <option value="">No client</option>
+        {% for client in clients %}
+        <option value="{{ client.id }}">{{ client.name }}{% if client.company %} &mdash; {{ client.company }}{% endif %}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-semibold text-slate-700 mb-1.5">Deal Type</label>
+      <select name="deal_type"
+              class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-shadow">
+        <option value="M&A">M&amp;A</option>
+        <option value="JV">Joint Venture</option>
+        <option value="Investment">Investment</option>
+        <option value="IPO">IPO Readiness</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-semibold text-slate-700 mb-1.5">Description <span class="text-slate-400 font-normal text-xs">(optional)</span></label>
+      <textarea name="description" rows="3"
+                class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-shadow"
+                placeholder="Brief description of the deal..."></textarea>
+    </div>
+    <button type="submit"
+            class="w-full py-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white rounded-xl text-sm font-semibold hover:from-brand-700 hover:to-brand-800 transition-all shadow-md shadow-brand-200">
+      Create Deal Room
+    </button>
+  </form>
+</div>
+{% endblock %}

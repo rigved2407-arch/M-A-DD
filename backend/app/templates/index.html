@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900">Deal Rooms</h1>
+    <p class="text-sm text-slate-500 mt-1">{{ deals|length }} deal(s) &middot; Indian M&A practice</p>
+  </div>
+  <a href="/deals/new" class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-600 to-brand-700 text-white rounded-xl text-sm font-medium hover:from-brand-700 hover:to-brand-800 transition-all shadow-md shadow-brand-200">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    New Deal
+  </a>
+</div>
+
+{% if deals %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+  {% for deal in deals %}
+  <a href="/deals/{{ deal.id }}" class="group bg-white border border-slate-200 rounded-2xl p-5 hover:border-brand-300 hover:shadow-lg transition-all shadow-sm">
+    <div class="flex items-start justify-between mb-4">
+      <div class="w-10 h-10 bg-gradient-to-br from-brand-100 to-indigo-100 rounded-xl flex items-center justify-center shadow-inner">
+        <svg class="w-5 h-5 text-brand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+      </div>
+      <span class="px-2.5 py-0.5 rounded-lg text-xs font-semibold border
+        {% if deal.status == 'active' %}bg-green-50 text-green-700 border-green-200
+        {% elif deal.status == 'completed' %}bg-blue-50 text-blue-700 border-blue-200
+        {% else %}bg-slate-100 text-slate-600 border-slate-200{% endif %}">
+        {{ deal.status }}
+      </span>
+    </div>
+    <h2 class="font-bold text-slate-900 group-hover:text-brand-700 transition-colors">{{ deal.deal_name }}</h2>
+    <p class="text-sm text-slate-500 mt-1">{{ deal.target_company }}{% if deal.acquirer %} &rarr; {{ deal.acquirer }}{% endif %}</p>
+    <div class="flex items-center gap-3 mt-4 pt-3 border-t border-slate-100 text-xs text-slate-400">
+      <span class="flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        {{ deal.document_count or 0 }} docs
+      </span>
+      <span class="flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+        {{ deal.issue_count or 0 }} issues
+      </span>
+      {% if deal.risk_score is not none %}
+      <span class="ml-auto flex items-center gap-1 font-semibold
+        {% if deal.risk_score > 50 %}text-red-600
+        {% elif deal.risk_score > 25 %}text-amber-600
+        {% else %}text-green-600{% endif %}">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        {{ deal.risk_score }}%
+      </span>
+      {% endif %}
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+  <div class="text-center py-24 text-slate-400">
+    <div class="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+      <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+    </div>
+    <p class="text-lg font-semibold text-slate-600 mb-2">No deals yet</p>
+    <p class="text-sm mb-6 max-w-md mx-auto leading-relaxed">Create your first M&A deal room to start due diligence. Upload documents, analyze red flags, generate reports — all under Indian regulatory frameworks.</p>
+    <a href="/deals/new" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white rounded-xl font-medium hover:from-brand-700 hover:to-brand-800 transition-all shadow-md shadow-brand-200">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Create a Deal
+    </a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

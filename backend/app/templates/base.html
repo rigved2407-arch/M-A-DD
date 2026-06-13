@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ settings.brand_name }}{% if settings.firm_name != "Your Law Firm" %} &mdash; {{ settings.firm_name }}{% endif %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .workstream-badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+    .ws-legal { @apply bg-purple-100 text-purple-800; }
+    .ws-financial { @apply bg-green-100 text-green-800; }
+    .ws-commercial { @apply bg-blue-100 text-blue-800; }
+    .ws-tax { @apply bg-amber-100 text-amber-800; }
+    .ws-hr { @apply bg-pink-100 text-pink-800; }
+    .ws-it { @apply bg-cyan-100 text-cyan-800; }
+    .ws-environmental { @apply bg-emerald-100 text-emerald-800; }
+    .ws-insurance { @apply bg-orange-100 text-orange-800; }
+    .ws-regulatory { @apply bg-red-100 text-red-800; }
+    .ws-other { @apply bg-slate-100 text-slate-800; }
+    .htmx-indicator { opacity: 0; transition: opacity 200ms ease-in; }
+    .htmx-request .htmx-indicator { opacity: 1; }
+    .htmx-request.htmx-indicator { opacity: 1; }
+    .fade-in { animation: fadeIn 0.3s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased flex flex-col">
+  <nav class="bg-gradient-to-r from-brand-700 to-brand-900 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2 text-lg font-bold text-white tracking-tight">
+        <span class="text-xl">⚖️</span> {{ settings.brand_name }}
+      </a>
+      <div class="flex items-center gap-1 text-sm">
+        <a href="/" class="px-3 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors font-medium {% if request.url.path == '/' %}bg-white/15 text-white{% endif %}">Deals</a>
+        <a href="/deals/new" class="px-3 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors font-medium {% if request.url.path == '/deals/new' %}bg-white/15 text-white{% endif %}">New Deal</a>
+        <a href="/dpdp/privacy" class="px-3 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors font-medium {% if '/dpdp' in request.url.path %}bg-white/15 text-white{% endif %}">Privacy</a>
+      </div>
+    </div>
+  </nav>
+  <main class="flex-1 max-w-7xl mx-auto px-4 py-8 w-full">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="border-t border-slate-200 bg-white mt-12">
+    <div class="max-w-7xl mx-auto px-4 py-4 text-center text-xs text-slate-400">
+      {{ settings.brand_name }} &mdash; Powered by {{ settings.firm_name }}
+    </div>
+  </footer>
+</body>
+</html>
