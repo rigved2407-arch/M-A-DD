@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { login } from '../lib/api'
 import { Scale, AlertCircle } from 'lucide-react'
 
@@ -52,6 +52,9 @@ export default function Login() {
             <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
               className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-shadow"
               placeholder="••••••••" />
+          </div>
+          <div className="flex items-center justify-end">
+            <Link to="/forgot-password" className="text-xs text-brand-600 hover:text-brand-800 font-medium">Forgot password?</Link>
           </div>
           <button type="submit" disabled={loading}
             className="w-full py-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white rounded-xl text-sm font-semibold hover:from-brand-700 hover:to-brand-800 transition-all shadow-md shadow-brand-200 disabled:opacity-50">

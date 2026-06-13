@@ -93,6 +93,28 @@ def send_report_ready(deal_name: str, deal_id: str, recipient_email: str):
     return _send_email(recipient_email, subject, html)
 
 
+def send_password_reset(user_name: str, user_email: str, token: str):
+    reset_url = f"{settings.firm_base_url or 'http://localhost:3000'}/reset-password?token={token}"
+    subject = f"[{settings.brand_name}] Password Reset Request"
+    html = f"""
+    <html><body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+    <div style="background: linear-gradient(135deg, #4338ca, #312e81); padding: 24px; text-align: center; border-radius: 12px 12px 0 0;">
+        <h1 style="color: #fff; margin: 0; font-size: 20px;">⚖️ {settings.brand_name}</h1>
+    </div>
+    <div style="padding: 24px; border: 1px solid #e2e8f0; border-top: 0; border-radius: 0 0 12px 12px;">
+        <h2 style="margin-top: 0;">Password Reset</h2>
+        <p>Hi {user_name},</p>
+        <p>A password reset was requested for your <strong>{settings.brand_name}</strong> account.</p>
+        <p style="text-align: center; margin: 24px 0;">
+            <a href="{reset_url}" style="background: linear-gradient(135deg, #4f46e5, #4338ca); color: #fff; padding: 12px 32px; border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block;">Reset Password</a>
+        </p>
+        <p style="color: #888; font-size: 12px;">This link expires in 1 hour. If you didn't request this, ignore this email.</p>
+        <p style="color: #666; font-size: 12px;">&mdash; {settings.firm_name}</p>
+    </div></body></html>
+    """
+    return _send_email(user_email, subject, html)
+
+
 def send_welcome_email(user_name: str, user_email: str):
     subject = f"Welcome to {settings.brand_name}"
     html = f"""

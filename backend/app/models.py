@@ -205,6 +205,16 @@ class DataSubjectRequest(Base):
     resolution_notes = Column(Text)
 
 
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+    id = Column(String, primary_key=True, default=_uuid)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    token = Column(String(256), unique=True, nullable=False, index=True)
+    expires_at = Column(DateTime, nullable=False)
+    used_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=_utcnow)
+
+
 class BreachNotification(Base):
     __tablename__ = "dpdp_breach_notifications"
     id = Column(String, primary_key=True, default=_uuid)

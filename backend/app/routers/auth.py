@@ -69,3 +69,64 @@ def login(data: LoginInput, db: Session = Depends(get_db)):
             created_at=user.created_at, last_login_at=user.last_login_at,
         ),
     )
+
+
+class ForgotPasswordInput(BaseModel):
+    email: str
+
+
+class ResetPasswordInput(BaseModel):
+    token: str
+    password: str
+
+
+@router.post("/forgot-password")
+def forgot_password(data: ForgotPasswordInput, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == data.email).first()
+    if not user:
+        return {"message": "If this email is registered, a reset link has been sent."}
+
+    from app.models import PasswordResetToken
+
+    reset_token = secrets.token_urlsafe(48)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+
+    token_record = PasswordResetToken(
+        user_id=user.id,
+        token=reset_token,
+        expires_at=expires_at,
+    )
+    db.add(token_record)
+    db.commit()
+
+    from app.services.email_service import send_password_reset
+    try:
+        send_password_reset(user.name, user.email, reset_token)
+    except Exception:
+        pass
+
+    return {"message": "If this email is registered, a reset link has been sent."}
+
+
+@router.post("/reset-password")
+def reset_password(data: ResetPasswordInput, db: Session = Depends(get_db)):
+    from app.models import PasswordResetToken
+
+    token_record = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token == data.token,
+        PasswordResetToken.used_at.is_(None),
+        PasswordResetToken.expires_at > datetime.now(timezone.utc),
+    ).first()
+
+    if not token_record:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
+    user = db.query(User).filter(User.id == token_record.user_id).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
+
+    user.password_hash = hash_password(data.password)
+    token_record.used_at = datetime.now(timezone.utc)
+    db.commit()
+
+    return {"message": "Password reset successfully. You can now log in with your new password."}

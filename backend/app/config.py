@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     firm_name: str = "Your Law Firm"
     firm_email: str = "contact@yourfirm.com"
     support_email: str = "support@yourfirm.com"
+    firm_base_url: str = "http://localhost:3000"
 
     smtp_host: str = ""
     smtp_port: int = 587
@@ -52,8 +53,13 @@ class Settings(BaseSettings):
 
     def validate(self):
         errors = []
+        warnings = []
+
         if not self.database_url:
             errors.append("DATABASE_URL is required")
+        elif "sqlite" in self.database_url:
+            warnings.append("SQLite is NOT safe for production — use PostgreSQL (DATABASE_URL=postgresql+psycopg://...)")
+
         if self.encrypt_documents and not self.encryption_key:
             errors.append("ENCRYPTION_KEY is required when ENCRYPT_DOCUMENTS=true")
         if not self.openai_api_key and not self.groq_api_key:
@@ -64,6 +70,9 @@ class Settings(BaseSettings):
             errors.append("DATA_RETENTION_DAYS must be >= 1")
         if self.dpdp_compliance and self.data_residency not in ("in", "local"):
             errors.append("DATA_RESIDENCY must be 'in' or 'local' for DPDP compliance")
+
+        for w in warnings:
+            logger.warning("Configuration warning: %s", w)
         if errors:
             for e in errors:
                 logger.error("Configuration error: %s", e)
