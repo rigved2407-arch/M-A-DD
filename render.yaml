@@ -1,9 +1,11 @@
 services:
   - type: web
     name: ma-dd-api
-    runtime: docker
+    runtime: python
     region: singapore
     plan: starter
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2 --proxy-headers --forwarded-allow-ips *
     envVars:
       - key: PYTHONPATH
         value: /app/backend
