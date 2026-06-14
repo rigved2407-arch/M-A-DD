@@ -71,6 +71,54 @@ def login(data: LoginInput, db: Session = Depends(get_db)):
     )
 
 
+class RegisterInput(BaseModel):
+    email: str
+    name: str
+    password: str
+    firm_name: str = "My Firm"
+
+
+@router.post("/register")
+def register(data: RegisterInput, db: Session = Depends(get_db)):
+    existing = db.query(User).filter(User.email == data.email).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    from app.models import Organization
+
+    org = Organization(name=data.firm_name)
+    db.add(org)
+    db.flush()
+
+    user = User(
+        organization_id=org.id,
+        email=data.email,
+        name=data.name,
+        role="admin",
+        password_hash=hash_password(data.password),
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    token = create_jwt(user.id, user.organization_id, user.role)
+
+    from app.services.email_service import send_welcome_email
+    try:
+        send_welcome_email(user.name, user.email)
+    except Exception:
+        pass
+
+    return LoginOut(
+        access_token=token,
+        user=UserOut(
+            id=user.id, email=user.email, name=user.name,
+            role=user.role, is_active=user.is_active,
+            created_at=user.created_at, last_login_at=user.last_login_at,
+        ),
+    )
+
+
 class ForgotPasswordInput(BaseModel):
     email: str
 

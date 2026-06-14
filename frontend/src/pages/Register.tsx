@@ -1,11 +1,12 @@
 import { useState, FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { createUser } from '../lib/api'
+import { register } from '../lib/api'
 import { Scale, AlertCircle } from 'lucide-react'
 
 export default function Register() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [firmName, setFirmName] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
@@ -20,8 +21,11 @@ export default function Register() {
 
     setLoading(true)
     try {
-      await createUser({ email, name, role: 'associate', password })
-      navigate('/login?registered=1')
+      const res = await register({ email, name, password, firm_name: firmName || name + "'s Firm" })
+      localStorage.setItem('token', res.access_token)
+      localStorage.setItem('userName', res.user.name)
+      localStorage.setItem('userRole', res.user.role)
+      navigate('/')
     } catch (err: any) {
       setError(err.message || 'Registration failed')
     } finally {
@@ -35,7 +39,7 @@ export default function Register() {
         <div className="text-center mb-8">
           <Scale className="w-12 h-12 text-white mx-auto mb-3" />
           <h1 className="text-2xl font-bold text-white">Create Account</h1>
-          <p className="text-brand-200 text-sm mt-1">Join your firm's M&A Due Diligence platform</p>
+          <p className="text-brand-200 text-sm mt-1">Set up your firm's M&A Due Diligence workspace</p>
         </div>
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 space-y-4">
           {error && (
@@ -44,7 +48,13 @@ export default function Register() {
             </div>
           )}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Full Name</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Firm / Organization Name</label>
+            <input type="text" required value={firmName} onChange={e => setFirmName(e.target.value)}
+              className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500"
+              placeholder="Your Law Firm LLP" />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Your Full Name</label>
             <input type="text" required value={name} onChange={e => setName(e.target.value)}
               className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500"
               placeholder="Your name" />
@@ -69,7 +79,7 @@ export default function Register() {
           </div>
           <button type="submit" disabled={loading}
             className="w-full py-3 bg-gradient-to-r from-brand-600 to-brand-700 text-white rounded-xl text-sm font-semibold hover:from-brand-700 hover:to-brand-800 transition-all shadow-md disabled:opacity-50">
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? 'Creating workspace...' : 'Create Workspace'}
           </button>
           <p className="text-center text-xs text-slate-500">
             Already have an account?{' '}

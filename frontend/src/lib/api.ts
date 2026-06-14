@@ -51,6 +51,9 @@ export interface Report { id: string; deal_id: string; status: string; summary?:
 export const login = (email: string, password: string) =>
   request<{ access_token: string; user: User }>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) })
 
+export const register = (data: { email: string; name: string; password: string; firm_name: string }) =>
+  request<{ access_token: string; user: User }>('/auth/register', { method: 'POST', body: JSON.stringify(data) })
+
 // Deals
 export const listDeals = () => request<Deal[]>('/deals')
 export const getDeal = (id: string) => request<Deal>(`/deals/${id}`)

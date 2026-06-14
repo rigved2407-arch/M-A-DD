@@ -5,7 +5,7 @@ from app.config import settings
 from app.database import set_current_org, get_default_org
 from app.routers.auth import decode_jwt
 
-EXEMPT_PATHS = {"/api/health", "/api/auth/login", "/", "/deals/new", "/login", "/api/docs", "/api/redoc", "/openapi.json"}
+EXEMPT_PATHS = {"/api/health", "/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/reset-password", "/", "/deals/new", "/login", "/api/docs", "/api/redoc", "/openapi.json"}
 
 
 class APIKeyMiddleware(BaseHTTPMiddleware):
