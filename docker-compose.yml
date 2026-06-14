@@ -10,7 +10,6 @@ services:
     env_file:
       - backend/.env
     environment:
-      - DATABASE_URL=postgresql+psycopg://postgres:Annabeth%40_2407@db.ndprqfixktiknidfeutx.supabase.co:5432/postgres?sslmode=require
       - PYTHONPATH=/app/backend
     volumes:
       - storage_data:/app/backend/data
