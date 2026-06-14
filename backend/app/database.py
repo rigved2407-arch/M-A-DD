@@ -9,8 +9,8 @@ from app.config import settings
 logger = logging.getLogger("ma_dd.database")
 
 _db_url = settings.database_url
-if _db_url.startswith("postgresql://") and not _db_url.startswith("postgresql+psycopg://"):
-    _db_url = _db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+if _db_url.startswith("postgresql://") and not _db_url.startswith("postgresql+psycopg2://"):
+    _db_url = _db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 _is_sqlite = "sqlite" in _db_url
 
