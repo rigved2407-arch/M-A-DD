@@ -6,9 +6,10 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.models import Document, Deal
+from app.database import get_db, get_current_org
+from app.models import Document, Deal, Organization
 from app.schemas import DocumentOut
+from app.services.usage_limits import check_document_limit
 from app.config import settings
 from app.services.document_parser import parse_document_raw, extract_metadata
 from app.services.classifier import classify_document
@@ -63,6 +64,13 @@ async def upload_document(deal_id: str, file: UploadFile = File(...), db: Sessio
     if not deal:
         raise HTTPException(status_code=404, detail="Deal not found")
 
+    org_id = get_current_org()
+    org = db.query(Organization).filter(Organization.id == org_id).first() if org_id else None
+    if org:
+        ok, msg = check_document_limit(org)
+        if not ok:
+            raise HTTPException(status_code=403, detail=msg)
+
     storage = Path(settings.storage_dir) / deal_id
     storage.mkdir(parents=True, exist_ok=True)
 
@@ -103,6 +111,9 @@ async def upload_document(deal_id: str, file: UploadFile = File(...), db: Sessio
     )
     db.add(doc)
     deal.document_count = db.query(Document).filter(Document.deal_id == deal_id).count()
+    if org:
+        org.document_count = (org.document_count or 0) + 1
+        org.storage_used_mb = (org.storage_used_mb or 0) + len(content) / (1024 * 1024)
     db.commit()
     db.refresh(doc)
     return doc
@@ -119,5 +130,10 @@ def delete_document(deal_id: str, doc_id: str, db: Session = Depends(get_db)):
     deal = db.query(Deal).filter(Deal.id == deal_id).first()
     if deal:
         deal.document_count = db.query(Document).filter(Document.deal_id == deal_id).count()
+    org_id = get_current_org()
+    org = db.query(Organization).filter(Organization.id == org_id).first() if org_id else None
+    if org:
+        org.document_count = max(0, (org.document_count or 0) - 1)
+        org.storage_used_mb = max(0, (org.storage_used_mb or 0) - (doc.file_size or 0) / (1024 * 1024))
     db.commit()
     return {"ok": True}

@@ -2,9 +2,10 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.models import Deal
+from app.database import get_db, get_current_org
+from app.models import Deal, Organization
 from app.schemas import DealCreate, DealOut
+from app.services.usage_limits import check_deal_limit
 
 router = APIRouter(prefix="/api/deals", tags=["deals"])
 
@@ -16,8 +17,16 @@ def list_deals(db: Session = Depends(get_db)):
 
 @router.post("", response_model=DealOut)
 def create_deal(data: DealCreate, db: Session = Depends(get_db)):
+    org_id = get_current_org()
+    org = db.query(Organization).filter(Organization.id == org_id).first() if org_id else None
+    if org:
+        ok, msg = check_deal_limit(org)
+        if not ok:
+            raise HTTPException(status_code=403, detail=msg)
     deal = Deal(**data.model_dump())
     db.add(deal)
+    if org:
+        org.deal_count = (org.deal_count or 0) + 1
     db.commit()
     db.refresh(deal)
     return deal

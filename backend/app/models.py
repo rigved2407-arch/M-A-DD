@@ -21,12 +21,25 @@ WORKSTREAMS = [
 USER_ROLES = ["partner", "associate", "reviewer", "admin"]
 
 
+PLANS = {
+    "free":     {"deals": 1, "users": 3, "documents": 50, "storage_mb": 100, "price": 0, "features": ["basic_analysis", "basic_reports"]},
+    "starter":  {"deals": 5, "users": 10, "documents": 200, "storage_mb": 500, "price": 29, "features": ["basic_analysis", "full_reports", "qa", "export"]},
+    "pro":      {"deals": 25, "users": 50, "documents": 1000, "storage_mb": 2000, "price": 99, "features": ["basic_analysis", "full_reports", "qa", "export", "priority_support", "custom_branding"]},
+    "enterprise": {"deals": -1, "users": -1, "documents": -1, "storage_mb": -1, "price": -1, "features": ["all"]},
+}
+
+
 class Organization(Base):
     __tablename__ = "organizations"
     id = Column(String, primary_key=True, default=_uuid)
     name = Column(String(256), nullable=False)
     email = Column(String(256))
     address = Column(Text)
+    plan = Column(String(32), default="free")
+    deal_count = Column(Integer, default=0)
+    user_count = Column(Integer, default=0)
+    document_count = Column(Integer, default=0)
+    storage_used_mb = Column(Float, default=0)
     created_at = Column(DateTime, default=_utcnow)
 
 

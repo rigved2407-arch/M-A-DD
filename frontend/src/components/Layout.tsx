@@ -1,10 +1,12 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Scale, FolderOpen, PlusCircle, Shield, LogOut, Menu, X } from 'lucide-react'
+import { Scale, FolderOpen, PlusCircle, Shield, BookOpen, LogOut, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 
 const nav = [
   { label: 'Deals', path: '/', icon: FolderOpen },
   { label: 'New Deal', path: '/deals/new', icon: PlusCircle },
+  { label: 'Guide', path: '/getting-started', icon: BookOpen },
+  { label: 'Admin', path: '/admin', icon: Shield },
   { label: 'Privacy', path: '/privacy', icon: Shield },
 ]
 

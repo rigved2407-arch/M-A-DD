@@ -87,6 +87,7 @@ def register(data: RegisterInput, db: Session = Depends(get_db)):
     from app.models import Organization
 
     org = Organization(name=data.firm_name)
+    org.user_count = 1
     db.add(org)
     db.flush()
 

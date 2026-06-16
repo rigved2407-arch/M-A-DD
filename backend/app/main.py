@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.database import init_db, SessionLocal, set_current_org, set_default_org
-from app.routers import deals, documents, issues, analysis, qa, reports, users, clients, activity, auth
+from app.routers import deals, documents, issues, analysis, qa, reports, users, clients, activity, auth, subscription, admin
 from app.web.routes import router as web_router
 from app.middleware.auth import APIKeyMiddleware
 from app.middleware.audit import AuditMiddleware
@@ -49,6 +49,8 @@ app.include_router(users.router)
 app.include_router(clients.router)
 app.include_router(activity.router)
 app.include_router(auth.router)
+app.include_router(subscription.router)
+app.include_router(admin.router)
 app.include_router(web_router)
 
 static_dir = Path(__file__).parent / "static"

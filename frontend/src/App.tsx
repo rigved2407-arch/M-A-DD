@@ -7,6 +7,10 @@ import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import DealDetail from './pages/DealDetail'
 import NewDeal from './pages/NewDeal'
+import AdminDashboard from './pages/AdminDashboard'
+import Landing from './pages/Landing'
+import Terms from './pages/Terms'
+import GettingStarted from './pages/GettingStarted'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('token')
@@ -37,19 +41,21 @@ function PrivacyPage() {
 }
 
 export default function App() {
+  const token = localStorage.getItem('token')
   return (
-    <Layout>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+    <Routes>
+      <Route path="/" element={token ? <Layout><Dashboard /></Layout> : <Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/deals/new" element={<ProtectedRoute><NewDeal /></ProtectedRoute>} />
-        <Route path="/deals/:id" element={<ProtectedRoute><DealDetail /></ProtectedRoute>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Layout>
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/getting-started" element={<GettingStarted />} />
+      <Route path="/admin" element={<ProtectedRoute><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
+      <Route path="/deals/new" element={<ProtectedRoute><Layout><NewDeal /></Layout></ProtectedRoute>} />
+      <Route path="/deals/:id" element={<ProtectedRoute><Layout><DealDetail /></Layout></ProtectedRoute>} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }

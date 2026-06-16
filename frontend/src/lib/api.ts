@@ -1,6 +1,6 @@
 const BASE = import.meta.env.VITE_API_URL || '/api'
 
-async function request<T>(path: string, opts?: RequestInit): Promise<T> {
+export async function api<T = any>(path: string, opts?: RequestInit): Promise<T> {
   const token = localStorage.getItem('token')
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (token) headers['Authorization'] = `Bearer ${token}`
@@ -49,19 +49,19 @@ export interface Report { id: string; deal_id: string; status: string; summary?:
 
 // Auth
 export const login = (email: string, password: string) =>
-  request<{ access_token: string; user: User }>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) })
+  api<{ access_token: string; user: User }>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) })
 
 export const register = (data: { email: string; name: string; password: string; firm_name: string }) =>
-  request<{ access_token: string; user: User }>('/auth/register', { method: 'POST', body: JSON.stringify(data) })
+  api<{ access_token: string; user: User }>('/auth/register', { method: 'POST', body: JSON.stringify(data) })
 
 // Deals
-export const listDeals = () => request<Deal[]>('/deals')
-export const getDeal = (id: string) => request<Deal>(`/deals/${id}`)
-export const createDeal = (data: Partial<Deal>) => request<Deal>('/deals', { method: 'POST', body: JSON.stringify(data) })
-export const deleteDeal = (id: string) => request<{ok:boolean}>(`/deals/${id}`, { method: 'DELETE' })
+export const listDeals = () => api<Deal[]>('/deals')
+export const getDeal = (id: string) => api<Deal>(`/deals/${id}`)
+export const createDeal = (data: Partial<Deal>) => api<Deal>('/deals', { method: 'POST', body: JSON.stringify(data) })
+export const deleteDeal = (id: string) => api<{ok:boolean}>(`/deals/${id}`, { method: 'DELETE' })
 
 // Documents
-export const listDocuments = (dealId: string) => request<Document[]>(`/deals/${dealId}/documents`)
+export const listDocuments = (dealId: string) => api<Document[]>(`/deals/${dealId}/documents`)
 export const uploadDocument = async (dealId: string, file: File): Promise<Document> => {
   const token = localStorage.getItem('token')
   const headers: Record<string,string> = {}
@@ -74,30 +74,30 @@ export const uploadDocument = async (dealId: string, file: File): Promise<Docume
 
 // Analysis
 export const analyzeDocument = (dealId: string, docId: string) =>
-  request<{document_id:string;summary:string;red_flags_count:number;issues_created:number}>(`/deals/${dealId}/analysis/documents/${docId}`, { method: 'POST' })
+  api<{document_id:string;summary:string;red_flags_count:number;issues_created:number}>(`/deals/${dealId}/analysis/documents/${docId}`, { method: 'POST' })
 export const analyzeAll = (dealId: string) =>
-  request<{total_analyzed:number;total_issues:number;risk_score:number}>(`/deals/${dealId}/analysis/all`, { method: 'POST' })
+  api<{total_analyzed:number;total_issues:number;risk_score:number}>(`/deals/${dealId}/analysis/all`, { method: 'POST' })
 
 // Issues
-export const listIssues = (dealId: string) => request<Issue[]>(`/deals/${dealId}/issues`)
+export const listIssues = (dealId: string) => api<Issue[]>(`/deals/${dealId}/issues`)
 export const updateIssueStatus = (dealId: string, issueId: string, status: string) =>
-  request<{ok:boolean}>(`/deals/${dealId}/issues/${issueId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) })
+  api<{ok:boolean}>(`/deals/${dealId}/issues/${issueId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) })
 
 // Q&A
 export const askQuestion = (dealId: string, question: string) =>
-  request<QASession>(`/deals/${dealId}/qa`, { method: 'POST', body: JSON.stringify({ question }) })
+  api<QASession>(`/deals/${dealId}/qa`, { method: 'POST', body: JSON.stringify({ question }) })
 
 // Reports
 export const generateReport = (dealId: string) =>
-  request<{report_id:string;status:string;path:string}>(`/deals/${dealId}/reports/generate`, { method: 'POST' })
+  api<{report_id:string;status:string;path:string}>(`/deals/${dealId}/reports/generate`, { method: 'POST' })
 export const downloadReportUrl = (dealId: string, reportId: string) =>
   `${BASE}/deals/${dealId}/reports/${reportId}/download`
 
 // Clients
-export const listClients = () => request<Client[]>('/clients')
-export const createClient = (data: Partial<Client>) => request<Client>('/clients', { method: 'POST', body: JSON.stringify(data) })
+export const listClients = () => api<Client[]>('/clients')
+export const createClient = (data: Partial<Client>) => api<Client>('/clients', { method: 'POST', body: JSON.stringify(data) })
 
 // Users
-export const listUsers = () => request<User[]>('/users')
+export const listUsers = () => api<User[]>('/users')
 export const createUser = (data: { email: string; name: string; role: string; password: string }) =>
-  request<User>('/users', { method: 'POST', body: JSON.stringify(data) })
+  api<User>('/users', { method: 'POST', body: JSON.stringify(data) })

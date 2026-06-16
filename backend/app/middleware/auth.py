@@ -31,9 +31,11 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             token = auth_header[7:]
             payload = decode_jwt(token)
             if payload:
-                set_current_org(payload.get("org"))
+                org_id = payload.get("org")
+                set_current_org(org_id)
                 request.state.user_id = payload.get("sub")
                 request.state.user_role = payload.get("role")
+                request.state.org_id = org_id
                 return await call_next(request)
             return JSONResponse(status_code=401, content={"detail": "Invalid or expired token"})
 
