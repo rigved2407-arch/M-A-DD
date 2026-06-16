@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.middleware.auth import get_current_org, require_role
+from app.dependencies import get_current_org, require_role
 from app.models import Organization, User
 from app.services.password_utils import hash_password
 

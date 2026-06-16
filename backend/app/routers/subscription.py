@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.middleware.auth import get_current_org
+from app.dependencies import get_current_org
 from app.models import Organization, PLANS, User
 from app.services.usage_limits import get_plan
 
