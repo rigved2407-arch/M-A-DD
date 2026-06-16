@@ -133,6 +133,29 @@ def init_db():
     import app.models
     Base.metadata.create_all(bind=engine)
     enable_sqlite_wal()
+    _migrate_schema()
+
+
+def _migrate_schema():
+    try:
+        from sqlalchemy import text
+        dialect = engine.dialect.name
+        if dialect == "sqlite":
+            return
+        for col, col_type in [
+            ("plan", "VARCHAR(32) DEFAULT 'free'"),
+            ("deal_count", "INTEGER DEFAULT 0"),
+            ("user_count", "INTEGER DEFAULT 0"),
+            ("document_count", "INTEGER DEFAULT 0"),
+            ("storage_used_mb", "FLOAT DEFAULT 0"),
+        ]:
+            try:
+                with engine.begin() as conn:
+                    conn.execute(text(f"ALTER TABLE organizations ADD COLUMN {col} {col_type}"))
+            except Exception:
+                pass
+    except Exception:
+        pass
 
 
 def get_db():
