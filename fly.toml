@@ -1,0 +1,4 @@
+app = "ma-dd-backend"
+
+[build]
+  dockerfile = "Dockerfile"
